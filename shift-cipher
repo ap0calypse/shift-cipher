@@ -1,0 +1,196 @@
+#!/usr/bin/perl
+use strict;
+use Getopt::Std;
+use POSIX;      # because of ceil()
+
+# name:     shift-cipher
+# author:   ap0calypse (ap0calypse@agitatio.org)
+# license:  DO WHATEVER YOU WANT!
+# purpose:  reads a sentence from STDIN an returns
+#           the ciphered sentence.
+#
+
+our ($opt_k, $opt_h, $opt_d);
+
+getopt('d:k:h');
+
+sub usage {
+    print << "EOUSAGE";
+usage:
+======
+    encryption:
+    ***********
+    echo "normal text" | shift-cipher-ng -k PRIVATEKEY
+     - PRIVATEKEY must be a single lowercase word and must not
+       contain any special characters.
+    decryption:
+    ***********
+    echo "encrypted text" | shift-cipher-ng -d PRIVATEKEY
+     - PRIVATEKEY must be a single lowercase word and must not
+       contain any special characters.
+example:
+========
+    encryption:
+    ***********
+    echo "i love shifting" | shift-cipher-ng -k abc
+        - will result in following output:
+    [i nowg tjigvioi]
+    decryption:
+    ***********
+    echo "i nowg tjigvioi" | shift-cipher-ng -d abc
+        - will result in following output:
+    [i love shifting]
+    
+explanation:
+============
+    This is because the sentence is transformed like this:
+    input:  [i] [ ] [l] [o] [v] [e] [ ] [s] [h] [i] [f] [t] [i] [n] [g]
+    key:    [a] [b] [c] [a] [b] [c] [a] [b] [c] [a] [b] [c] [a] [b] [c]
+
+    the key for each letter represents where the alphabet starts.
+    spaces are not transformed.
+    
+    the result is:
+    [i][ ][n][o][w][g][ ][t][j][i][g][v][i][o][i]
+    or:
+    [i nowg tjigvioi]
+    =========================================================================
+    For further information search the web or visit my blog:
+    http://ap0calypse.agitatio.org
+    Have fun!
+EOUSAGE
+}
+
+if (defined $opt_h) {
+    &usage and exit;
+}
+
+elsif (defined $opt_k) {
+    if ($opt_k =~ m/[^a-z]+/) {
+        &usage and exit;
+    }
+
+    chomp (my $input = <>);
+    $input = lc $input;
+
+    my @a_input = split //, $input;
+    my @a_key = split //, $opt_k;
+
+    my (@a_input_num, @a_output_num, @a_output, @a_key_long) = ('', '', '', '');
+
+    my ($i_length, $k_length) = (length $input, length $opt_k);
+    my $repeats = ceil($i_length / $k_length);
+    my $overhead = 0;
+
+# generate key-array
+    for (1 .. $repeats) {
+        push (@a_key_long, @a_key);
+    }
+
+# ascii-fy the array ;)
+    for (0 .. $#a_key_long) {
+        $a_key_long[$_] = ord $a_key_long[$_];
+    }
+
+# generate output-ascii array
+    for (0 .. $#a_input) {
+        if (ord $a_input[$_] != 32) {
+            $a_input_num[$_] = (ord $a_input[$_]) - 97;
+            $a_output_num[$_] = $a_key_long[$_] + $a_input_num[$_];
+        }
+        else {
+            push @a_output_num, 32;
+        }
+    }
+
+# look for overhead ( values greater 122 (z) )
+    for (0 .. $#a_output_num) {
+        if ($a_output_num[$_] > 122) {
+            $overhead = $a_output_num[$_] - 122;
+            $a_output[$_] = chr (96 + $overhead);
+        }
+        else {
+            $a_output[$_] = chr $a_output_num[$_];
+        }
+    }
+
+# print output
+    print "[";
+    print for @a_output;
+    print "]\n";
+}
+
+elsif (defined $opt_d) {
+    if ($opt_d =~ m/[^a-z]/) {
+        &usage;
+        exit;
+    }
+    chomp (my $input = <>);
+    $input = lc $input;
+
+    my @a_input = split //, $input;
+    my @a_key = split //, $opt_d;
+
+    my (@a_input_num, @a_output_num, @a_output, @a_key_long) = ('', '', '', '');
+
+    my ($i_length, $k_length) = (length $input, length $opt_d);
+    my $repeats = ceil($i_length / $k_length);
+    my $overhead = 0;
+
+# generate key-array
+    for (1 .. $repeats) {
+        push (@a_key_long, @a_key);
+    }
+
+# ascii-fy the array ;)
+    for (0 .. $#a_key_long) {
+        $a_key_long[$_] = ord $a_key_long[$_];
+    }
+
+# generate output-ascii array
+    for (0 .. $#a_input) {
+        if ((ord $a_input[$_]) != 32) {
+            $a_input_num[$_] = ord $a_input[$_];
+        }
+        else {
+            $a_input_num[$_] = 32;
+        }
+    }
+
+    for (0 .. $#a_input_num) {
+        if ($a_input_num[$_] != 32) {
+            $overhead = $a_key_long[$_] - 97;
+            $a_output_num[$_] = $a_input_num[$_] - $overhead;
+        }
+        else {
+            $a_output_num[$_] = 32;
+        }
+    }
+
+    for (0 .. $#a_output_num) {
+        $a_output[$_] = chr($a_output_num[$_]);
+    }
+
+    my $underhead;
+    for (0 .. $#a_output_num) {
+        if ($a_output_num[$_] != 32) {
+            if ($a_output_num[$_] < 97) {
+                $underhead = 97 - $a_output_num[$_];
+                $a_output[$_] = chr (123 - $underhead);
+            }
+            else {
+                $a_output[$_] = chr ($a_output_num[$_]);
+            }
+        }
+        else {
+            $a_output[$_] = " ";
+        }
+    }
+    print "[";
+    print for @a_output;
+    print "]\n";
+}
+else {
+    &usage;
+    exit;
+}

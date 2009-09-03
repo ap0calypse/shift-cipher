@@ -1,0 +1,68 @@
+1. What is this?
+2. Why did you do this?
+3. Prerequisites
+4. Features
+5. Configuration
+6. How to run
+7. Bugs and known issues
+8. License stuff 
+
+
+1. What is this?
+########################################################
+
+This is shift-cipher, a tool for encrypting and decrypting shift-ciphered
+sentences. For more information run it with the "-h" parameter.
+
+
+2. Why did you do this?
+########################################################
+
+I was bored... again.
+
+
+3. Prerequisites
+########################################################
+
+Every Linux distribution around should do the task.
+
+
+4. Features
+########################################################
+
+Encryption and decryption with a given key sentence.
+
+
+5. Configuration
+########################################################
+
+There is no configuration.
+
+
+6. How to run
+########################################################
+
+open a terminal window
+
+$ chmod 755 shift-cipher
+$ echo "my very difficult sentence" | ./shift-cipher -k complicatedkey
+[om kpza wmipmawzf dmptxrfo]
+$ echo "om kpza wmipmawzf dmptxrfo" | ./shift-cipher -d complicatedkey
+[my very difficult sentence]
+
+
+7. Bugs and known issues
+########################################################
+
+ - no bugs so far ... found one?
+    If you think you have found a bug or you want to contribute,
+    drop me a line via mail. You could also send me a patch with
+    git format-patch and send it to me.
+
+8. License stuff
+########################################################
+
+Because I don't think that anyone wants to use this in a proprietary 
+product I give erveyone the "do whatever you want" - license. As long as I don't 
+say anything different you can do whatever you want. Just tell me if you do.
+
